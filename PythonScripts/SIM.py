@@ -12,11 +12,12 @@ import nibabel as nib
 import shutil
 import csv
 import sys
-from neuropower import BUM, neuropowermodels, cluster
+from neuropower import BUM, cluster
 sys.path.append(os.path.join(os.environ.get('HOMEDIR'),"Functions/"))
 import simul_multisubject_fmri_dataset
 import model
 import uuid
+from Functions import neuropowermodels
 from palettable.colorbrewer.qualitative import Paired_12,Set1_9
 import matplotlib.pyplot as plt
 import pandas as pd

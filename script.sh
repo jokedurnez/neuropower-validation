@@ -25,4 +25,4 @@ do
   sbatch HCP_interim.sbatch
 done
 
-rsync -azP jdurnez@sherlock.stanford.edu:/scratch/users/jdurnez/power/tables/ /Users/Joke/Documents/Onderzoek/ProjectsOngoing/power/ValidationResults/
+rsync -azP ./ jdurnez@ls5.tacc.utexas.edu:/home1/03545/jdurnez/interim/
