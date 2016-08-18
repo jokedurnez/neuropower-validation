@@ -4,7 +4,7 @@
 # validations. To re-run all analyses, please adjust this file.
 
 # This is the github folder with all analysis files
-export HOMEDIR="/home1/03545/jdurnez/power/"
+export HOMEDIR="/home1/03545/jdurnez/interim/"
 
 # Subdirectories of home
 export SCRIPTDIR=$(echo $HOMEDIR\PythonScripts/)

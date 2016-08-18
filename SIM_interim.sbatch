@@ -1,31 +1,53 @@
 #!/bin/bash
 
-#SBATCH --job-name=SIM.interim
-#SBATCH --output=error/out.SIM.interim
-#SBATCH --error=error/err.SIM.interim
-#SBATCH --time=30:00:00
-#SBATCH --nodes=1
-#SBATCH --partition=russpold
-#SBATCH --qos=russpold
+#SBATCH --job-name=SIM.NAD.RFT
+#SBATCH --output=error/out.SIM.NAD.RFT
+#SBATCH --error=error/err.SIM.NAD.RFT
+#SBATCH --time=3:00:00
+#SBATCH -n 40
+#SBATCH -N 1
+#SBATCH -p normal
 
-. ./config.sh
+#SBATCH --mail-user=joke.durnez@gmail.com
+#SBATCH --mail-type=begin   # email me when the job starts
+#SBATCH --mail-type=end     # email me when the job finishes
+
+. ./config_tacc.sh
+
+# Load modules
+module load fsl/5.0.9
+module load python/2.7.11
+
+# Parameters for software
+export FSLDIR=/work/01329/poldrack/lonestar/software_lonestar5/fsl-5.0.8
+export PATH=$PATH:$FSLDIR
+source $FSLDIR/etc/fslconf/fsl.sh
+export FSLOUTPUTTYPE='NIFTI_GZ'
 
 PILOT=15
-FINAL=65
-U="2.3"
+FINAL=40
+EXC="2.3"
+MODEL="CS"
 
-SCRIPTDIR=$(echo $HOMEDIR\PythonScripts/)
-FILEDIR=$(echo $HOMEDIR\SimulationFiles/)
-OUTDIR_A=$(echo $RESDIR\SIM_adaptive_$PILOT\_$U/)
-OUTDIR_P=$(echo $RESDIR\SIM_predictive_$PILOT\_$U/)
+simsperbatch=20
 
-if [ ! -d "$OUTDIR_A" ]; then mkdir $OUTDIR_A; fi
-if [ ! -d "$OUTDIR_P" ]; then mkdir $OUTDIR_P; fi
-
-for j in $(seq 1 4);
+for k in $(seq 1 $simsperbatch);
 do
-  SIM=$(((i-1)*5+j))
-  SIM=$i
-  python $SCRIPTDIR/SIM.py $U $PILOT $FINAL $SIM $FILEDIR $OUTDIR_P $TMPDIR "predictive"
-  python $SCRIPTDIR/SIM.py $U $PILOT $FINAL $SIM $FILEDIR $OUTDIR_A $TMPDIR "adaptive"
+  id=$(((i-1)*$simsperbatch+k))
+  SEED=$id
+
+  ADAPTIVE="adaptive"
+  export OUTDIR=$(echo $RESDIR\SIM_$ADAPTIVE\_$PILOT\_$EXC\_$MODEL)
+  if [ ! -d "$OUTDIR" ]; then mkdir $OUTDIR; fi
+  python $SCRIPTDIR/SIM.py $EXC $PILOT $FINAL $SEED $ADAPTIVE $MODEL &
+  sleep 2m
+
+  ADAPTIVE="predictive"
+  export OUTDIR=$(echo $RESDIR\SIM_$ADAPTIVE\_$PILOT\_$EXC\_$MODEL)
+  if [ ! -d "$OUTDIR" ]; then mkdir $OUTDIR; fi
+  python $SCRIPTDIR/SIM.py $EXC $PILOT $FINAL $SEED $ADAPTIVE $MODEL &
+  sleep 2m
+
 done
+
+wait

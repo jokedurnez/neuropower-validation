@@ -33,6 +33,7 @@ startloop = 0
 endloop = 16
 
 SIMFILEDIR = os.environ.get('SIMFILEDIR')
+HOMEDIR = os.environ.get('HOMEDIR')
 RESDIR = os.environ.get('OUTDIR')
 TMPDIR = os.environ.get('TMPDIR')
 TEMPDIR = os.path.join(TMPDIR,str(uuid.uuid4()))
@@ -44,6 +45,10 @@ es_names = np.repeat(["half","one","onehalf","two"],4)
 wd_names = [2,4,6,8]*4
 
 resfile = os.path.join(RESDIR,"estimation_SIM_"+str(SEED)+".csv")
+
+allpvalues = pd.read_csv(HOMEDIR+"pvalues.csv")
+allpvals = np.round(np.array(allpvalues.p),decimals=4)
+alltvals = np.round(np.array(allpvalues.t),decimals=4)
 
 for c in np.arange(startloop,endloop):
     os.popen("mkdir "+str(TEMPDIR))
@@ -105,6 +110,7 @@ for c in np.arange(startloop,endloop):
         peaks = cluster.PeakTable(SPM,EXC,MASK)
     elif MODEL == "CS":
         peaks = cluster.PeakTable(SPM,-100,MASK)
+        peaks.peak = np.round(peaks.peak,decimals=4)
 
     ###############################################################
     # estimate and compute model and estimate power on pilot data #
@@ -115,7 +121,9 @@ for c in np.arange(startloop,endloop):
         pvalues = np.exp(-EXC*(np.array(peaks.peak)-EXC))
         pvalues = [max(10**(-6),t) for t in pvalues]
     elif MODEL == "CS":
-        pvalues = 1-np.asarray(neuropowermodels.nulCDF(peaks.peak,method="CS"))
+        peaks.peak[peaks.peak>np.max(alltvals)] = np.round(np.max(alltvals),decimals=4)
+        peaks.peak[peaks.peak<np.min(alltvals)] = np.round(np.max(alltvals),decimals=4)
+        pvalues = np.array([allpvals[t==alltvals] for t in peaks.peak]).flatten()
     peaks['pval'] = pvalues
 
     # estimate model
@@ -248,7 +256,9 @@ for c in np.arange(startloop,endloop):
             pvalues = [max(10**(-6),t) for t in pvalues]
         elif MODEL == "CS":
             peaks = cluster.PeakTable(SPM,-100,MASK)
-            pvalues = 1-np.asarray(neuropowermodels.nulCDF(peaks.peak,method="CS"))
+            peaks.peak[peaks.peak>np.max(alltvals)] = np.round(np.max(alltvals),decimals=4)
+            peaks.peak[peaks.peak<np.min(alltvals)] = np.round(np.max(alltvals),decimals=4)
+            pvalues = np.array([allpvals[t==alltvals] for t in peaks.peak]).flatten()
         peaks['pval'] = pvalues
 
 
