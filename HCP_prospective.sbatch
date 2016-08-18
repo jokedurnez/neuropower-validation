@@ -52,9 +52,7 @@ do
     do
       echo ${starts[start]}
       echo ${ends[start]}
-      TEMPORARY=$(echo $TMPDIR\tempdir\_$SEED\_$start)
-      mkdir $TEMPORARY
-      /usr/bin/time -v python $SCRIPTDIR/HCP.py $EXC $PILOT $FINAL $SEED $ADAPTIVE $MODEL ${starts[start]} ${ends[start]} $TEMPORARY &
+      /usr/bin/time -v python $SCRIPTDIR/HCP.py $EXC $PILOT $FINAL $SEED $ADAPTIVE $MODEL ${starts[start]} ${ends[start]} $TMPDIR &
       sleep 2m
 
     done

@@ -33,13 +33,16 @@ FILEDIR = os.environ.get('FILEDIR')
 HCPDIR = os.environ.get('HCPDIR')
 OUTDIR = os.environ.get('OUTDIR')
 
-TEMPDIR = TMPDIR
+TEMPDIR = os.path.join(TMPDIR,str(uuid.uuid4()))
+print(TEMPDIR)
 
 # parameters
 all_sub = 180
 true_sub = 100
 
 for c in np.arange(startloop,endloop):
+    os.popen("mkdir "+str(TEMPDIR))
+    os.chdir(TEMPDIR)
 
     resfile = os.path.join(OUTDIR,"estimation_HCP_"+str(SEED)+"_"+str(startloop)+"-"+str(endloop)+".csv")
     PredictionFile = os.path.join(OUTDIR,'powpre_HCP_'+str(SEED)+'_contrast_'+str(c)+'.csv')

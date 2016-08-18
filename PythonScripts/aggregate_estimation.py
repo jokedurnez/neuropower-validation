@@ -17,10 +17,10 @@ TABDIR = os.environ.get('TABDIR')
 
 poweraim = 0.80
 
-estimation_out = os.path.join(TABDIR,"estimation_"+MODALITY+'_'+ADAPTIVE+'_'+EXC+'_'+MODEL+'.csv')
-prediction_out = os.path.join(TABDIR,"prediction_"+MODALITY+'_'+ADAPTIVE+'_'+EXC+'_'+MODEL+'.csv')
-true_out = os.path.join(TABDIR,"true_"+MODALITY+'_'+ADAPTIVE+'_'+EXC+'_'+MODEL+'.csv')
-conditional_out = os.path.join(TABDIR,"conditional_"+MODALITY+'_'+ADAPTIVE+'_'+EXC+'_'+MODEL+'.csv')
+estimation_out = os.path.join(TABDIR,"estimation_"+MODALITY+'_'+ADAPTIVE+'_'+EXC+'_'+MODEL+'_'+PILOT+'.csv')
+prediction_out = os.path.join(TABDIR,"prediction_"+MODALITY+'_'+ADAPTIVE+'_'+EXC+'_'+MODEL+'_'+PILOT+'.csv')
+true_out = os.path.join(TABDIR,"true_"+MODALITY+'_'+ADAPTIVE+'_'+EXC+'_'+MODEL+'_'+PILOT+'.csv')
+conditional_out = os.path.join(TABDIR,"conditional_"+MODALITY+'_'+ADAPTIVE+'_'+EXC+'_'+MODEL+'_'+PILOT+'.csv')
 
 simw = [2,4,6,8]*4
 simef = np.repeat(['half','one','onehalf','two'],4)
