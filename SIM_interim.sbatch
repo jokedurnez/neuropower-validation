@@ -1,8 +1,8 @@
 #!/bin/bash
 
-#SBATCH --job-name=SIM.NAD.RFT
-#SBATCH --output=error/out.SIM.NAD.RFT
-#SBATCH --error=error/err.SIM.NAD.RFT
+#SBATCH --job-name=SIM.AD.CS
+#SBATCH --output=error/out.SIM.AD.CS
+#SBATCH --error=error/err.SIM.AD.CS
 #SBATCH --time=3:00:00
 #SBATCH -n 40
 #SBATCH -N 1

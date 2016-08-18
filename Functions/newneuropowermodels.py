@@ -35,7 +35,7 @@ def altPDF(peaks,mu,sigma,exc=None,method="RFT"):
 		den = 1. - scipy.stats.norm.cdf(alpha)
 		fa = num/den
 	elif method == "CS":
-		fa = scipy.stats.norm.pdf(x,mu,sigma)
+		fa = scipy.stats.norm.pdf(peaks,mu,sigma)
 	return fa
 
 def nulPDF(peaks,exc=None,method="RFT"):
@@ -55,7 +55,7 @@ def altCDF(peaks,mu,sigma,exc=None,method="RFT"):
 		alpha = (exc-mu)/sigma
 		Fa = (scipy.stats.norm.cdf(ksi) - scipy.stats.norm.cdf(alpha))/(1-scipy.stats.norm.cdf(alpha))
 	elif method == "CS":
-		Fa = scipy.stats.norm.cdf(x,mu,sigma)
+		Fa = scipy.stats.norm.cdf(peaks,mu,sigma)
 	return Fa
 
 def TruncTau(mu,sigma,exc):
@@ -80,7 +80,7 @@ def mixPDF(peaks,pi1,mu,sigma,exc=None,method="RFT"):
 		f0=nulPDF(peaks,exc=exc,method="RFT")
 		fa=altPDF(peaks,mu,sigma=sigma,exc=exc,method="RFT")
 	elif method == "CS":
-		f0 = nulPDF(peaks,sigma=sigma,method="CS")
+		f0 = nulPDF(peaks,method="CS")
 		fa = altPDF(peaks,mu,sigma=sigma,method="CS")
 	f=[(1-pi1)*x + pi1*y for x, y in zip(f0, fa)]
 	return(f)
@@ -109,7 +109,7 @@ def modelfit(peaks,pi1,exc=None,starts=1,seed=None,method="RFT"):
 		if method == "RFT":
 			opt = scipy.optimize.minimize(mixPDF_SLL,[mus[i],sigmas[i]],method='L-BFGS-B',args=(peaks,pi1,exc,method),bounds=((exc+(1./exc),50),(0.1,50)))
 		elif method == "CS":
-			opt = scipy.optimize.minimize(mixPDF_SLL,[mus[i],sigmas[i]],method='L-BFGS-B',args=(peaks,pi1,exc,method),bounds=((0,50),))
+			opt = scipy.optimize.minimize(mixPDF_SLL,[mus[i],sigmas[i]],method='L-BFGS-B',args=(peaks,pi1,exc,method),bounds=((0,50),(0.1,50)))
 		best.append(opt.fun)
 		par.append(opt.x)
 	minind=best.index(np.nanmin(best))

@@ -13,11 +13,11 @@ import shutil
 import csv
 import sys
 from neuropower import BUM, cluster
+import uuid
 sys.path.append(os.path.join(os.environ.get('HOMEDIR'),"Functions/"))
+import newneuropowermodels as neuropowermodels
 import simul_multisubject_fmri_dataset
 import model
-import uuid
-from Functions import neuropowermodels
 from palettable.colorbrewer.qualitative import Paired_12,Set1_9
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -37,6 +37,7 @@ HOMEDIR = os.environ.get('HOMEDIR')
 RESDIR = os.environ.get('OUTDIR')
 TMPDIR = os.environ.get('TMPDIR')
 TEMPDIR = os.path.join(TMPDIR,str(uuid.uuid4()))
+print(TEMPDIR)
 
 # conditions
 effectsizes = np.repeat([0.5,1,1.5,2],4)
@@ -122,7 +123,7 @@ for c in np.arange(startloop,endloop):
         pvalues = [max(10**(-6),t) for t in pvalues]
     elif MODEL == "CS":
         peaks.peak[peaks.peak>np.max(alltvals)] = np.round(np.max(alltvals),decimals=4)
-        peaks.peak[peaks.peak<np.min(alltvals)] = np.round(np.max(alltvals),decimals=4)
+        peaks.peak[peaks.peak<np.min(alltvals)] = np.round(np.min(alltvals),decimals=4)
         pvalues = np.array([allpvals[t==alltvals] for t in peaks.peak]).flatten()
     peaks['pval'] = pvalues
 
@@ -142,10 +143,11 @@ for c in np.arange(startloop,endloop):
             mu = modelfit['mu']
         elif MODEL == "CS":
             modelfit = neuropowermodels.modelfit(peaks.peak,bum['pi1'],starts=5,method="CS")
-            est_sd = 'nan'
+            est_eff = modelfit['mu']
+            est_sd = modelfit['sigma']
             xn = np.arange(-10,30,0.01)
-            alt = np.asarray(neuropowermodels.altPDF(xn,mu=modelfit['mu'],method="CS"))
-            est_eff = xn[alt==np.max(alt)][0]
+            alt = np.asarray(neuropowermodels.altPDF(xn,mu=modelfit['mu'],sigma =modelfit['sigma'],method="CS"))
+            #est_eff = xn[alt==np.max(alt)][0]
             est_exp_eff = 'nan'
             mu = modelfit['mu']
 
@@ -217,8 +219,8 @@ for c in np.arange(startloop,endloop):
         elif MODEL == "CS":
             xn = np.arange(-10,30,0.01)
             nul = np.asarray(neuropowermodels.nulPDF(xn,method="CS"))
-            projected_effect = projected_effect-xn[nul==np.max(nul)][0]
-            powerpred =  {k:1-neuropowermodels.altCDF([v],projected_effect,method="CS")[0] for k,v in thresholds.items() if v!='nan'}
+            #projected_effect = projected_effect-xn[nul==np.max(nul)][0]
+            powerpred =  {k:1-neuropowermodels.altCDF([v],projected_effect,modelfit['sigma'],method="CS")[0] for k,v in thresholds.items() if v!='nan'}
         power_predicted.append(powerpred)
 
     shutil.rmtree(TEMPDIR)
@@ -254,12 +256,14 @@ for c in np.arange(startloop,endloop):
             peaks = cluster.PeakTable(SPM,EXC,MASK)
             pvalues = np.exp(-EXC*(np.array(peaks.peak)-EXC))
             pvalues = [max(10**(-6),t) for t in pvalues]
+            peaks['pval'] = pvalues
         elif MODEL == "CS":
             peaks = cluster.PeakTable(SPM,-100,MASK)
+            peaks.peak = np.round(peaks.peak,decimals=4)
             peaks.peak[peaks.peak>np.max(alltvals)] = np.round(np.max(alltvals),decimals=4)
-            peaks.peak[peaks.peak<np.min(alltvals)] = np.round(np.max(alltvals),decimals=4)
+            peaks.peak[peaks.peak<np.min(alltvals)] = np.round(np.min(alltvals),decimals=4)
             pvalues = np.array([allpvals[t==alltvals] for t in peaks.peak]).flatten()
-        peaks['pval'] = pvalues
+            peaks['pval'] = pvalues
 
 
         # compute true power for different procedures
