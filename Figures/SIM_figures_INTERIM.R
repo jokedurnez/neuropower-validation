@@ -159,8 +159,8 @@ points(res.nonad$pi1t,
 
 # plot 2: model estimation
 
-plot(seq(2,6,length=10),
-     seq(2,6,length=10),
+plot(seq(2,7,length=10),
+     seq(2,7,length=10),
      col=NA,
      xlab="True expected effect size",
      ylab="Estimated expected effect size",
@@ -170,7 +170,7 @@ plot(seq(2,6,length=10),
 abline(0,1,lwd=1,col="grey50")
 box();axis(1);axis(2)
 
-points(res.nonad$esexp,
+points(res.nonad$est,
        res.nonad$ese,
        col=alpha(cols[res.nonad$condition]),
        pch=16,cex=cxp
