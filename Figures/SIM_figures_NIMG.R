@@ -13,14 +13,22 @@ library(gridExtra)
 
 args <- commandArgs(TRUE)
 RESDIR <- args[1]
+RESDIR <- Sys.getenv("TABDIR")
 HOMEDIR <- args[2]
+HOMEDIR <- Sys.getenv("HOMEDIR")
 FIGDIR <- args[3]
+FIGDIR <- Sys.getenv("FIGDIR")
+ADAPTIVE <- args[4]
+PILOT <- args[5]
+EXC <- args[6]
+MODEL <- args[7]
+
 
 effs <- rep(c(0.5,1,1.5,2),each=4)
 acts <- rep(c(2,4,6,8),4)
 cons_list <- paste("EFFECT:",effs," - ","ACTIVATION SIZE:",acts,sep="")
 methods_n <- c("Uncorrected","Benjamini-Hochberg","Bonferroni","Random Field Theory")
-u <- 2.3
+u <- EXC
 
 ## FUNCTIONS
 
@@ -31,16 +39,25 @@ g_legend<-function(a.gplot){
   return(legend)}
 
 # result files name
-res.nonad.file = paste(RESDIR,"/estimation_SIM_predictive_",u,"_RFT.csv",sep="")
-pre.nonad.file = paste(RESDIR,"/prediction_SIM_predictive_",u,"_RFT.csv",sep="")
-true.nonad.file = paste(RESDIR,"/true_SIM_predictive_",u,"_RFT.csv",sep="")
-cond.nonad.file = paste(RESDIR,"/conditional_SIM_predictive_",u,"_RFT.csv",sep="")
+
+res.nonad.file = paste(RESDIR,"/estimation_SIM_",ADAPTIVE,"_",u,"_",MODEL,"_",PILOT,".csv",sep="")
+pre.nonad.file = paste(RESDIR,"/prediction_SIM_",ADAPTIVE,"_",u,"_",MODEL,"_",PILOT,".csv",sep="")
+true.nonad.file = paste(RESDIR,"/true_SIM_",ADAPTIVE,"_",u,"_",MODEL,"_",PILOT,".csv",sep="")
+cond.nonad.file = paste(RESDIR,"/conditional_SIM_",ADAPTIVE,"_",u,"_",MODEL,"_",PILOT,".csv",sep="")
+
+modelfit.file = paste(FIGDIR,"/FIG_SIM_modelfit_",ADAPTIVE,"_",u,"_",MODEL,"_",PILOT,".pdf",sep="")
+powerprediction.file = paste(FIGDIR,"/FIG_SIM_power_",ADAPTIVE,"_",u,"_",MODEL,"_",PILOT,".pdf",sep="")
+samplesize.file = paste(FIGDIR,"/FIG_SIM_samplesize_",ADAPTIVE,"_",u,"_",MODEL,"_",PILOT,".pdf",sep="")
 
 # read results
 
 res.nonad <- read.table(res.nonad.file,header=TRUE,sep=",",dec=".")
 names(res.nonad)[1] <- "condition"
 res.nonad$condition <- res.nonad$condition+1
+res.nonad$pi1t <- as.numeric(as.character(res.nonad$pi1t))
+res.nonad$pi1e <- as.numeric(as.character(res.nonad$pi1e))
+res.nonad$ese <- as.numeric(as.character(res.nonad$ese))
+res.nonad$esexp <- as.numeric(as.character(res.nonad$esexp))
 pre.nonad <- read.table(pre.nonad.file,header=TRUE,sep=",")
 obs.nonad <- read.table(true.nonad.file,header=TRUE,sep=",")
 cond.nonad <- read.table(cond.nonad.file,header=TRUE,sep=",")
@@ -57,7 +74,7 @@ res.nonad.mn <- ddply(res.nonad,
                       pi1t = mean(pi1t,na.rm=TRUE),
                       ese = mean(ese,na.rm=TRUE),
                       est = mean(est,na.rm=TRUE),
-                       esexp = mean(esexp,na.rm=TRUE),
+                      esexp = mean(esexp,na.rm=TRUE),
                       sde = mean(sde,na.rm=TRUE),
                       sdt = mean(sdt,na.rm=TRUE),
                       bumpar = mean(bumpar,na.rm=TRUE)
@@ -82,9 +99,9 @@ bias.nonad.mn$bias = pre.nonad.mn[,4]-obs.nonad.mn[,4]
 cond.nonad.mn <- ddply(cond.nonad,
                     ~condition + mcp,
                     summarise,
-                    power = mean(power),
-                    predicted = mean(predicted),
-                    true = mean(true),
+                    power = mean(power,na.rm=TRUE),
+                    predicted = mean(predicted,na.rm=TRUE),
+                    true = mean(true,na.rm=TRUE),
                     FWE = mean(FWE,na.rm=TRUE),
                     FDR = mean(FDR,na.rm=TRUE),
                     FPR = mean(FPR,na.rm=TRUE)
@@ -106,7 +123,7 @@ cols <- c(Greens,Blues,Greys,Reds)
 transp <- 0.2
 cxp <- 0.3
 
-pdf(paste(FIGDIR,"FIG_SIM_modelestimation.pdf",sep=""),width=8,height=5)
+pdf(modelfit.file,width=8,height=5)
 
 # plot layout
 
@@ -153,7 +170,7 @@ plot(seq(2,6,length=10),
 abline(0,1,lwd=1,col="grey50")
 box();axis(1);axis(2)
 
-points(res.nonad$est,
+points(res.nonad$esexp,
        res.nonad$ese,
        col=alpha(cols[res.nonad$condition]),
        pch=16,cex=cxp
@@ -238,7 +255,7 @@ for (method in methods){
 }
 
 
-pdf(paste(FIGDIR,"FIG_SIM_power_ss15.pdf",sep=""),width=15,height=17)
+pdf(powerprediction.file,width=15,height=17)
 grid.arrange(plots[["UN"]][[1]],plots[["UN"]][[2]],
              plots[["BH"]][[1]],plots[["BH"]][[2]],
              plots[["BF"]][[1]],plots[["BF"]][[2]],
@@ -326,7 +343,7 @@ leg <- ggplotGrob(
          y = "signal height")
 )
 
-pdf(paste(FIGDIR,"FIG_SIM_sscalc.pdf",sep=""),width=10,height=9)
+pdf(samplesize.file,width=10,height=9)
 
 grid.arrange(
   arrangeGrob(p[[1]],p[[3]],nrow=2),
